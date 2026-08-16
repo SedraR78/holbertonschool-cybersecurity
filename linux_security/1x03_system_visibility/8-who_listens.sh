@@ -1,2 +1,2 @@
 #!/bin/bash
-ss -ltnp4 2>/dev/null | grep ":$1 " | sed -n 's/.*users:((\"\([^\"]*\)\".*/\1/p'
+lsof -ti :$1 -sTCP:LISTEN | head -n 1 | xargs -r ps -o comm= -p
