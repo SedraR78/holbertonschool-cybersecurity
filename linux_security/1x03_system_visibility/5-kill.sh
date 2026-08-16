@@ -1,2 +1,3 @@
 #!/bin/bash
-kill -SIGKILL "$1"
+# Send SIGKILL (9) to a process
+kill -9 "$1"
