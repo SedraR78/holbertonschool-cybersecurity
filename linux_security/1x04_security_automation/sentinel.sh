@@ -19,7 +19,9 @@ log() {
 	local component="$1" target="$2" status="$3" details="$4"
 	local ts
 	ts=$(date -u +%FT%TZ)
-	echo "{\"timestamp\":\"$ts\",\"component\":\"$component\",\"target\":\"$target\",\"status\":\"$status\",\"details\":\"$details\"}" | tee -a "$LOG_FILE"
+	local line="{\"timestamp\":\"$ts\",\"component\":\"$component\",\"target\":\"$target\",\"status\":\"$status\",\"details\":\"$details\"}"
+	echo "$line"
+	echo "$line" >> "$LOG_FILE"
 }
 
 check_services() {
