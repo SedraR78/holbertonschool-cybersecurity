@@ -15,5 +15,6 @@ cp sentinel.timer /etc/systemd/system/sentinel.timer
 chmod 0644 /etc/systemd/system/sentinel.service /etc/systemd/system/sentinel.timer
 
 systemctl daemon-reload
-systemctl enable --now sentinel.timer
+systemctl enable sentinel.timer
+systemctl start sentinel.timer
 systemctl status sentinel.timer --no-pager

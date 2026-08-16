@@ -3,7 +3,6 @@
 
 CONFIG="${1:-/opt/sentinel/sentinel.conf}"
 [ -f "$CONFIG" ] || { echo "ERROR: config file not found: $CONFIG" >&2; exit 1; }
-# shellcheck source=/dev/null
 . "$CONFIG"
 
 for var in SERVICES FILES_TO_WATCH ALLOWED_PORTS; do
@@ -28,12 +27,12 @@ check_services() {
 	local svc
 	for svc in "${SERVICES[@]}"; do
 		if pgrep -f "$svc" >/dev/null 2>&1; then
-			log "SERVICE" "$svc" "OK" "$svc is running"
+			log "SERVICE" "$svc" "OK" "OK: $svc is running"
 		else
 			if eval "$svc" >/dev/null 2>&1 || systemctl start "$svc" >/dev/null 2>&1; then
-				log "SERVICE" "$svc" "FIXED" "Restarted $svc"
+				log "SERVICE" "$svc" "FIXED" "FIXED: Restarted $svc"
 			else
-				log "SERVICE" "$svc" "ALERT" "Failed to start $svc"
+				log "SERVICE" "$svc" "ALERT" "ALERT: Failed to start $svc"
 			fi
 		fi
 	done
@@ -43,23 +42,23 @@ check_integrity() {
 	local file gold live_hash gold_hash
 	for file in "${FILES_TO_WATCH[@]}"; do
 		gold="$GOLDEN_DIR/$(basename "$file").gold"
-		[ -f "$gold" ] || { log "INTEGRITY" "$file" "ALERT" "Golden copy missing"; continue; }
+		[ -f "$gold" ] || { log "INTEGRITY" "$file" "ALERT" "ALERT: Golden copy missing for $file"; continue; }
 		live_hash=$(md5sum "$file" 2>/dev/null | awk '{print $1}')
 		gold_hash=$(md5sum "$gold" 2>/dev/null | awk '{print $1}')
 		if [ "$live_hash" = "$gold_hash" ]; then
-			log "INTEGRITY" "$file" "OK" "$file integrity verified"
+			log "INTEGRITY" "$file" "OK" "OK: $file integrity verified"
 		else
 			if cp "$gold" "$file"; then
-				log "INTEGRITY" "$file" "FIXED" "Restored $file"
+				log "INTEGRITY" "$file" "FIXED" "FIXED: Restored $file"
 			else
-				log "INTEGRITY" "$file" "ALERT" "Restore failed for $file"
+				log "INTEGRITY" "$file" "ALERT" "ALERT: Restore failed for $file"
 			fi
 		fi
 	done
 }
 
 check_ports() {
-	local port pid allowed
+	local port pid allowed a
 	while read -r port; do
 		[ -n "$port" ] || continue
 		allowed=0
@@ -69,9 +68,9 @@ check_ports() {
 		[ "$allowed" -eq 1 ] && continue
 		pid=$(ss -ltnp4 2>/dev/null | grep ":$port " | grep -o 'pid=[0-9]*' | head -n1 | cut -d= -f2)
 		if [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null; then
-			log "PORT" "$port" "ALERT" "Killed rogue process on port $port"
+			log "PORT" "$port" "ALERT" "ALERT: Killed rogue process on port $port"
 		else
-			log "PORT" "$port" "ALERT" "Rogue listener on port $port (kill failed)"
+			log "PORT" "$port" "ALERT" "ALERT: Killed rogue process on port $port (kill failed)"
 		fi
 	done < <(ss -ltn4 2>/dev/null | awk 'NR>1 {sub(/.*:/,"",$4); print $4}' | sort -nu)
 }
