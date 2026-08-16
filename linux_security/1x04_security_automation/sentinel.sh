@@ -18,7 +18,7 @@ LOG_FILE="${LOG_FILE:-/var/log/sentinel.log}"
 log() {
 	local component="$1" target="$2" status="$3" details="$4"
 	local ts
-	ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+	ts=$(date -u +%FT%TZ)
 	printf '{"timestamp":"%s","component":"%s","target":"%s","status":"%s","details":"%s"}\n' \
 		"$ts" "$component" "$target" "$status" "$details" | tee -a "$LOG_FILE"
 }
