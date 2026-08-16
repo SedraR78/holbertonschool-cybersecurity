@@ -5,11 +5,14 @@ set -e
 INSTALL_DIR="/opt/sentinel"
 
 mkdir -p "$INSTALL_DIR" /var/backups/sentinel
-install -m 0750 sentinel.sh "$INSTALL_DIR/sentinel.sh"
-install -m 0640 sentinel.conf "$INSTALL_DIR/sentinel.conf"
+cp sentinel.sh "$INSTALL_DIR/sentinel.sh"
+cp sentinel.conf "$INSTALL_DIR/sentinel.conf"
+chmod 0750 "$INSTALL_DIR/sentinel.sh"
+chmod 0640 "$INSTALL_DIR/sentinel.conf"
 
-install -m 0644 sentinel.service /etc/systemd/system/sentinel.service
-install -m 0644 sentinel.timer /etc/systemd/system/sentinel.timer
+cp sentinel.service /etc/systemd/system/sentinel.service
+cp sentinel.timer /etc/systemd/system/sentinel.timer
+chmod 0644 /etc/systemd/system/sentinel.service /etc/systemd/system/sentinel.timer
 
 systemctl daemon-reload
 systemctl enable --now sentinel.timer
