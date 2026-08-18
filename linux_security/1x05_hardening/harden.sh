@@ -20,6 +20,10 @@ log() {
 	printf '[%s] %s\n' "$level" "$message"
 }
 
+touch "$LOG_FILE"
+chmod 640 "$LOG_FILE"
+chown root:root "$LOG_FILE"
+
 log "INFO" "Hardening framework initialized"
 
 # --- Load configuration ---
