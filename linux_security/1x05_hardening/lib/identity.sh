@@ -29,6 +29,7 @@ set_password_aging() {
 	local user uid
 	while IFS=: read -r user _ uid _; do
 		[ "$uid" -ge "$UID_MIN" ] && [ "$uid" -ne 65534 ] || continue
+		[ "$user" = "${SUDO_USER:-}" ] && continue
 		chage -M "$PASS_MAX_DAYS" -m "$PASS_MIN_DAYS" -W "$PASS_WARN_AGE" "$user"
 	done < /etc/passwd
 }
@@ -49,7 +50,7 @@ remove_unauthorized_users() {
 	while IFS=: read -r user _ uid _; do
 		[ "$uid" -gt "$UID_MIN" ] && [ "$uid" -ne 65534 ] || continue
 		is_protected "$user" && continue
-		[ "$user" = "$(logname 2>/dev/null)" ] && continue
+		[ "$user" = "${SUDO_USER:-}" ] && continue
 
 		if userdel -r "$user" 2>/dev/null; then
 			removed+=("$user")
@@ -60,7 +61,7 @@ remove_unauthorized_users() {
 	done < /etc/passwd
 
 	REPORT_USERS_COUNT="${#removed[@]}"
-	REPORT_USERS_LIST=$(IFS=', '; echo "${removed[*]}")
+	REPORT_USERS_LIST=$(printf '%s, ' "${removed[@]}" | sed 's/, $//')
 }
 
 harden_identity() {

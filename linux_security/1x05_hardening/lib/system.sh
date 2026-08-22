@@ -30,8 +30,10 @@ harden_system() {
 		fi
 	done
 
-	REPORT_REMOVED=$(IFS=', '; echo "${removed[*]}")
-	REPORT_INSTALLED=$(IFS=', '; echo "${installed[*]}")
+	REPORT_REMOVED=$(printf '%s, ' "${removed[@]}" | sed 's/, $//')
+	REPORT_INSTALLED=$(printf '%s, ' "${installed[@]}" | sed 's/, $//')
+
+	[ "${#removed[@]}" -eq 0 ] && REPORT_NOTHING_REMOVED="1"
 
 	log "INFO" "Removed: ${REPORT_REMOVED:-none}"
 	log "INFO" "Installed: ${REPORT_INSTALLED:-none}"
@@ -52,6 +54,7 @@ generate_report() {
 		echo "[INFO] Installed: ${REPORT_INSTALLED:-none}."
 		echo "[INFO] Removed: ${REPORT_REMOVED:-none}."
 		[ -n "${REPORT_UPDATE_WARN:-}" ] && echo "[WARN] Package updates skipped (repository unreachable)."
+		[ -n "${REPORT_NOTHING_REMOVED:-}" ] && echo "[WARN] No bloatware packages found to remove."
 		echo
 		echo "$line"
 		echo " COMPLIANCE STATUS: PASS"
