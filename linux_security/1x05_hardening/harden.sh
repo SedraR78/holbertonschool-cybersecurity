@@ -3,7 +3,8 @@
 
 set -euo pipefail
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
 readonly CONFIG_FILE="${SCRIPT_DIR}/config/harden.cfg"
 readonly LOG_FILE="/var/log/hardening.log"
 
@@ -28,11 +29,13 @@ log "INFO" "Hardening framework initialized"
 
 # --- Load configuration ---
 [ -f "$CONFIG_FILE" ] || { log "ERROR" "Config not found: $CONFIG_FILE"; exit 1; }
+# shellcheck source=/dev/null
 . "$CONFIG_FILE"
 log "INFO" "Configuration loaded"
 
 # --- Load libraries ---
 for lib in "${SCRIPT_DIR}"/lib/*.sh; do
+	# shellcheck source=/dev/null
 	. "$lib"
 	log "INFO" "Loaded module: $(basename "$lib")"
 done
@@ -42,5 +45,7 @@ harden_network
 harden_ssh
 harden_identity
 harden_system
+
+generate_report
 
 log "INFO" "Hardening completed"
